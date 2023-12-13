@@ -7,6 +7,7 @@ app = Flask(__name__)
 
 client_id = os.environ['CLIENT_ID']
 client_secret = os.environ['CLIENT_SECRET']
+host_url = os.environ['HOST_URL']
 
 @app.route("/")
 def home():
@@ -23,7 +24,7 @@ def codes():
         "client_secret" : client_secret,
         "code" : code,
         "grant_type" : "authorization_code",
-        "redirect_uri" : "http://localhost:5000/results"
+        "redirect_uri" : host_url + "results"
     }
     r = requests.post(url, data=data, headers=headers)
     access_token = json.loads(r.text)['access_token']
@@ -45,7 +46,7 @@ def authorize():
     params = {
         "response_type" : "code",
         "client_id" : client_id,
-        "redirect_uri" : "http://localhost:5000/codes",
+        "redirect_uri" : host_url + "codes",
         "scope" : "moderator:read:followers",
         "state" : username
         }
