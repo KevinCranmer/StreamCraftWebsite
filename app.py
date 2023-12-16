@@ -1,6 +1,6 @@
 import json
 import os
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, Response, request, render_template, redirect, url_for
 import requests
 import urllib
 app = Flask(__name__)
@@ -51,3 +51,42 @@ def authorize():
         "state" : username
         }
     return redirect(url + urllib.parse.urlencode(params))
+
+@app.route("/subscribe", methods=['POST'])
+def subscribe():
+    url = "https://api.twitch.tv/helix/eventsub/subscriptions"
+    headers = {
+        "Content-Type" : "application/json",
+        "Authorization" : "Bearer " + request.json['access_token'],
+        "Client-Id" : client_id
+    }
+    data = {
+        "type" : request.json['type'],
+        "version" : request.json['version'],
+        "condition" : {
+            "broadcaster_user_id" : request.json['condition']['broadcaster_user_id'],
+            "moderator_user_id" : request.json['condition']['moderator_user_id']
+        },
+        "transport" : {
+            "method" : request.json['transport']['method'],
+            "session_id" : request.json['transport']['session_id']
+        }
+    }
+    r = requests.post(url, data=json.dumps(data), headers=headers)
+    return Response(r.text, status=r.status_code, mimetype='application/json')
+
+
+@app.route("/refresh", methods=['POST'])
+def refresh():
+    url = "https://id.twitch.tv/oauth2/token"
+    headers = {
+        "Content-Type" : "application/x-www-form-urlencoded",
+    }
+    data = {
+        "grant_type" : "refresh_token",
+        "refresh_token" : request.json['refresh_token'],
+        "client_id" : client_id,
+        "client_secret" : client_secret
+    }
+    r = requests.post(url, data=data, headers=headers)
+    return Response(r.text, status=r.status_code, mimetype='application/json')
