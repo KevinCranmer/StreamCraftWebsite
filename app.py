@@ -47,10 +47,28 @@ def authorize():
         "response_type" : "code",
         "client_id" : client_id,
         "redirect_uri" : host_url + "codes",
-        "scope" : "moderator:read:followers",
+        "scope" : "moderator:read:followers bits:read channel:read:polls channel:manage:polls channel:read:redemptions channel:read:subscriptions",
         "state" : username
         }
     return redirect(url + urllib.parse.urlencode(params))
+
+@app.route("/poll", methods=['POST'])
+def create_poll():
+    url = "https://api.twitch.tv/helix/polls"
+    print("request: ", request.json)
+    headers = {
+        "Content-Type" : "application/json",
+        "Authorization" : "Bearer " + request.json['access_token'],
+        "Client-Id" : client_id
+    }
+    data = {
+        "broadcaster_id" : request.json['broadcaster_user_id'],
+        "title" : request.json['title'],
+        "duration" : request.json['duration'],
+        "choices" : request.json['choices']
+    }
+    r = requests.post(url, data=json.dumps(data), headers=headers)
+    return Response(r.text, status=r.status_code, mimetype='application/json')
 
 @app.route("/subscribe", methods=['POST'])
 def subscribe():
