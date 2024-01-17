@@ -8,6 +8,7 @@ app = Flask(__name__)
 client_id = os.environ['CLIENT_ID']
 client_secret = os.environ['CLIENT_SECRET']
 host_url = os.environ['HOST_URL']
+secret = os.environ['SECRET']
 
 @app.route("/")
 def home():
@@ -54,8 +55,9 @@ def authorize():
 
 @app.route("/poll", methods=['POST'])
 def create_poll():
+    if (request.json['secret'] != secret):
+        return Response("{\"error\":\"Missing Secret\"}", status=401, mimetype='application/json')
     url = "https://api.twitch.tv/helix/polls"
-    print("request: ", request.json)
     headers = {
         "Content-Type" : "application/json",
         "Authorization" : "Bearer " + request.json['access_token'],
@@ -72,6 +74,8 @@ def create_poll():
 
 @app.route("/subscribe", methods=['POST'])
 def subscribe():
+    if (request.json['secret'] != secret):
+        return Response("{\"error\":\"Missing Secret\"}", status=401, mimetype='application/json')
     url = "https://api.twitch.tv/helix/eventsub/subscriptions"
     headers = {
         "Content-Type" : "application/json",
@@ -96,6 +100,8 @@ def subscribe():
 
 @app.route("/refresh", methods=['POST'])
 def refresh():
+    if (request.json['secret'] != secret):
+        return Response("{\"error\":\"Missing Secret\"}", status=401, mimetype='application/json')
     url = "https://id.twitch.tv/oauth2/token"
     headers = {
         "Content-Type" : "application/x-www-form-urlencoded",
