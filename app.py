@@ -63,11 +63,19 @@ def create_poll():
         "Authorization" : "Bearer " + request.json['access_token'],
         "Client-Id" : client_id
     }
+    channelPointsVotingEnabled = False
+    channelPointsPerVote = 10
+    if ('channel_points_voting_enabled' in request.json):
+        channelPointsVotingEnabled = request.json['channel_points_voting_enabled']
+    if ('channel_points_per_vote' in request.json):
+        channelPointsPerVote = request.json['channel_points_per_vote']
     data = {
         "broadcaster_id" : request.json['broadcaster_user_id'],
         "title" : request.json['title'],
         "duration" : request.json['duration'],
-        "choices" : request.json['choices']
+        "choices" : request.json['choices'],
+        "channel_points_voting_enabled" : channelPointsVotingEnabled,
+        "channel_points_per_vote" : channelPointsPerVote
     }
     r = requests.post(url, data=json.dumps(data), headers=headers)
     return Response(r.text, status=r.status_code, mimetype='application/json')
